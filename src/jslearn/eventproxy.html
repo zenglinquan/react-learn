@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>事件代理</title>
+</head>
+
+<body>
+  <ul id="ul">
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+  </ul>
+  <div id="box">
+    <input type="button" id="add" value="添加" />
+    <input type="button" id="remove" value="删除" />
+    <input type="button" id="move" value="移动" />
+    <input type="button" id="select" value="选择" />
+  </div>
+  <input type="button" name="" id="btn" value="添加" />
+  <ul id="ul1">
+    <li>111</li>
+    <li>222</li>
+    <li>333</li>
+    <li>444</li>
+  </ul>
+  <ul id="test">
+    <li>
+      <p>11111111111</p>
+    </li>
+    <li>
+      <div>
+      </div>
+    </li>
+    <li>
+      <span>3333333333</span>
+    </li>
+    <li>4444444</li>
+  </ul>
+</body>
+<script>
+  window.onload = function () {
+
+    // 每次点击都需要遍历dom
+    function f1() {
+      var oUl = document.getElementById('ul');
+      var olis = oUl.getElementsByTagName('li');
+      for (let i = 0; i < olis.length; i++) {
+        olis[i].onclick = function () {
+          console.log(123)
+        }
+      }
+    }
+
+    //这里用父级ul做事件处理，当li被点击时，
+    //由于冒泡原理，事件就会冒泡到ul上，因为ul上有点击事件，所以事件就会触发
+    function f2() {
+      var oUl = document.getElementById("ul");
+      oUl.onclick = function () {
+        console.log(123);
+      }
+    }
+
+    /*
+    当然，这里当点击ul的时候，也是会触发的，那么问题就来了，
+    如果我想让事件代理的效果跟直接给节点的事件效果一样怎么办，
+    比如说只有点击li才会触发,解决办法使用Event对象
+    */
+
+    /*
+    Event对象提供了一个属性叫target，可以返回事件的目标节点，
+    我们成为事件源，也就是说，target就可以表示为当前的事件操作的dom，
+    但是不是真正操作dom，当然，这个是有兼容性的，标准浏览器用ev.target，
+    IE浏览器用event.srcElement，此时只是获取了当前节点的位置，
+    并不知道是什么节点名称，这里我们用nodeName来获取具体是什么标签名，
+    这个返回的是一个大写的，我们需要转成小写再做比较（习惯问题）：
+    */
+
+    function f3() {
+      var oUl = document.getElementById("ul");
+      oUl.onclick = function (ev) {
+        var ev = ev || window.event;
+        var target = ev.target || ev.srcElement;
+        if (target.nodeName.toLowerCase() == 'li') {
+          alert(123);
+          alert(target.innerHTML);
+        }
+      }
+    }
+
+    /* s总结：
+    f3函数这样改下就只有点击li会触发事件了，
+    且每次只执行一次dom操作，
+    如果li数量很多的话，将大大减少dom的操作，优化的性能可想而知！
+    */
+
+    //上面的例子是说li操作的是同样的效果，要是每个li被点击的效果都不一样，
+    //那么用事件委托还有用吗？
+
+    function f4() {
+      var oBox = document.getElementById("box");
+      oBox.onclick = function (ev) {
+        var ev = ev || window.event;
+        var target = ev.target || ev.srcElement;
+        if (target.nodeName.toLocaleLowerCase() == 'input') {
+          switch (target.id) {
+            case 'add':
+              alert('添加');
+              break;
+            case 'remove':
+              alert('删除');
+              break;
+            case 'move':
+              alert('移动');
+              break;
+            case 'select':
+              alert('选择');
+              break;
+          }
+        }
+      }
+    }
+
+    //document加载完成的现有dom节点下可以使用事件代理，
+    //那么如果是新增的节点，新增的节点会有事件吗？
+
+    //实现效果
+    //1.传统写法
+    /*
+    新增的li是没有事件的，说明添加子节点的时候，事件没有一起添加进去
+    */
+    function f5() {
+      var oBtn = document.getElementById("btn");
+      var oUl = document.getElementById("ul1");
+      var aLi = oUl.getElementsByTagName('li');
+      var num = 4;
+
+      //鼠标移入变红，移出变白
+      for (var i = 0; i < aLi.length; i++) {
+        aLi[i].onmouseover = function () {
+          this.style.background = 'red';
+        };
+        aLi[i].onmouseout = function () {
+          this.style.background = '#fff';
+        }
+      }
+      //添加新节点
+      oBtn.onclick = function () {
+        num++;
+        var oLi = document.createElement('li');
+        oLi.innerHTML = 111 * num;
+        oUl.appendChild(oLi);
+      };
+    }
+
+    //2.事件代理写法
+    /*新添加的子元素是带有事件效果的*/
+    function f6() {
+      var oBtn = document.getElementById("btn");
+      var oUl = document.getElementById("ul1");
+      var aLi = oUl.getElementsByTagName('li');
+      var num = 4;
+
+      //事件委托，添加的子元素也有事件
+      oUl.onmouseover = function (ev) {
+        var ev = ev || window.event;
+        var target = ev.target || ev.srcElement;
+        if (target.nodeName.toLowerCase() == 'li') {
+          target.style.background = "red";
+        }
+
+      };
+      oUl.onmouseout = function (ev) {
+        var ev = ev || window.event;
+        var target = ev.target || ev.srcElement;
+        if (target.nodeName.toLowerCase() == 'li') {
+          target.style.background = "#fff";
+        }
+
+      };
+
+      //添加新节点
+      oBtn.onclick = function () {
+        num++;
+        var oLi = document.createElement('li');
+        oLi.innerHTML = 111 * num;
+        oUl.appendChild(oLi);
+      };
+    }
+
+    // 场景升级
+    /*  
+    现在给一个场景 ul > li > div > p，div占满li，p占满div，还是给ul绑定时间，
+    需要判断点击的是不是li（假设li里面的结构是不固定的），
+    那么e.target就可能是p，也有可能是div，这种情况你会怎么处理呢？
+    */
+    /*
+    核心代码是while循环部分，实际上就是一个递归调用，你也可以写成一个函数，
+    用递归的方法来调用，同时用到冒泡的原理，从里往外冒泡，知道currentTarget为止，
+    当当前的target是li的时候，就可以执行对应的事件了，然后终止循环
+    */
+    function f7() {
+      var oUl = document.getElementById('test');
+      oUl.addEventListener('click', function (ev) {
+        var target = ev.target;
+        while (target !== oUl) {
+          if (target.tagName.toLowerCase() == 'li') {
+            console.log('li click~');
+            break;
+          }
+          target = target.parentNode;
+        }
+      })
+    }
+  }
+
+
+</script>
+
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="node"></div>
+  <script>
+    var node = document.getElementById('node');
+
+    //@event表示事件类型
+    //@function触发的回调函数
+    //@useCapture默认为false,表示事件句柄在冒泡阶段执行，若为true则在捕获阶段执行
+    // element.addEventListener(event, fn, useCapture)
+
+    //其中第三个参数除了是布尔值，还可以是一个对象，对对象参数来说，可以使用以下几个属性：
+    /*
+    - capture，布尔值，和 useCapture 作用一样
+    - once，布尔值，值为 true 表示该回调只会调用一次，调用后会移除监听
+    - passive，布尔值，表示永远不会调用 preventDefault
+    */
+
+    // 以下会先打印冒泡然后是捕获
+    node.addEventListener('click', event => {
+      console.log('冒泡')
+    }, false)
+    node.addEventListener('click', event => {
+      console.log('捕获')
+    }, true)
+  </script>
+</body>
+
+</html>
